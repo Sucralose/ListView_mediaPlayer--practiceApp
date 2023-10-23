@@ -1,23 +1,24 @@
 package com.benavivi.listviewpractice;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.benavivi.listviewpractice.databinding.ActivityMainBinding;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 	private ActivityMainBinding binding;
-	private ArrayList<String> songsNameArray;
-
-	private MediaPlayer mediaPlayer;
+	private MusicHandler musicHandler;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -25,71 +26,39 @@ public class MainActivity extends AppCompatActivity {
 		binding = ActivityMainBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
 
-		songsNameArray = new ArrayList<>();
-		createArrayListData();
+		createMusicHandler();
 		createListViewAdapter();
 
 		setListeners();
 
 	}
 
+	private void createMusicHandler () {
+		musicHandler = new MusicHandler(getBaseContext(),getApplicationContext());
+	}
+
 	private void setListeners () {
 		binding.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick (AdapterView<?> adapterView, View view, int itemIndex, long l) {
-				soundItemClickHandler(itemIndex);
-				Toast.makeText(getApplicationContext(),"Currently Playing: " + songsNameArray.get(itemIndex),Toast.LENGTH_SHORT).show();
+				musicHandler.playSound(itemIndex);
+				showShortToast("Currently Playing: " +musicHandler.getSongNameFromId(itemIndex));
 			}
 		});
 	}
 
-	private void soundItemClickHandler (int itemIndex) {
-		switch (itemIndex) {
-			case 0:
-				playSound(R.raw.ehrling_adventure);
-				break;
-			case 1:
-				playSound(R.raw.ehrling_nostalgic);
-				break;
-			case 2:
-				playSound(R.raw.ehrling_fire);
-				break;
-			case 3:
-				playSound(R.raw.ehrling_all_i_need);
-				break;
-			case 4:
-				playSound(R.raw.ehrling_sun_kissed);
-				break;
-			case 5:
-				playSound(R.raw.ehrling_tease);
-				break;
-			case 6:
-				playSound(R.raw.ehrling_i_feel_good);
-				break;
 
-		}
-	}
-	private void playSound(int soundId){
-		if(mediaPlayer != null && mediaPlayer.isPlaying()){
-			mediaPlayer.stop();
-		}
-		mediaPlayer = MediaPlayer.create(getApplicationContext(), soundId);
-		mediaPlayer.start();
-	}
+
 
 	private void createListViewAdapter () {
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,songsNameArray);
-		binding.listView.setAdapter(adapter);
+		customListViewAdapter customListViewAdapter = new customListViewAdapter(getApplicationContext(),  musicHandler.getSongsNameArray());
+		//ArrayAdapter<String> adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,songsNameArray);
+		binding.listView.setAdapter(customListViewAdapter);
 	}
 
-	private void createArrayListData(){
-		songsNameArray.add("Adventure");
-		songsNameArray.add("Nostalgic");
-		songsNameArray.add("Fire");
-		songsNameArray.add("All I need");
-		songsNameArray.add("Sun Kissed");
-		songsNameArray.add("Tease");
-		songsNameArray.add("I Feel Good");
 
+	private void showShortToast(String message){
+		Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 	}
+
 }
